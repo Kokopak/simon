@@ -5,6 +5,7 @@ import pygame
 from pygame.locals import *
 
 import random
+from termcolor import colored
 
 class Simon:
     def __init__(self, size_carre):
@@ -73,10 +74,10 @@ class Simon:
 
     def eclaircieCouleurs(self):
         eclaircie = {
-                "BLEU": ((self.size_carre , 0), self.bleu),
-                "JAUNE": ((self.size_carre * 2, 0), self.jaune),
-                "ROUGE": ((self.size_carre, self.size_carre), self.rouge),
-                "VERT": ((self.size_carre*2, self.size_carre), self.vert)
+                "BLEU": ((self.x_bleu, self.y_bleu), self.bleu),
+                "JAUNE": ((self.x_jaune, self.y_jaune), self.jaune),
+                "ROUGE": ((self.x_rouge, self.y_rouge), self.rouge),
+                "VERT": ((self.x_vert, self.y_vert), self.vert)
         }
 
         #Permet de dessiner un petit flash (blanc) sur les couleurs générés
@@ -119,9 +120,15 @@ class Simon:
                         pygame.time.wait(250)
                         #Pas pareil on sort 
                         if not self.checkListes():
+                            termcolor_carre = {
+                                    "BLEU": "blue",
+                                    "JAUNE": "yellow",
+                                    "ROUGE": "red",
+                                    "VERT": "green"
+                            }
                             print "Perdu !"
-                            print "Le bon ordre était : %s" % "-->".join(self.c_choix)
-                            print "Le votre : %s" % "-->".join(self.c_choix_util)
+                            print "Le bon ordre était : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix)
+                            print "Le votre : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix_util)
                             ok = False
                         else :
                             choix = self.genChoix()
