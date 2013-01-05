@@ -5,6 +5,8 @@ import pygame
 from pygame.locals import *
 
 import random
+import pickle
+import os
 from termcolor import colored
 
 class Simon:
@@ -14,7 +16,7 @@ class Simon:
         screen_dim = size_carre * 4
 
         self.screen = pygame.display.set_mode((screen_dim, screen_dim))
-        pygame.display.set_caption("Simons")
+        pygame.display.set_caption("Simon")
 
         self.size_carre = size_carre
 
@@ -29,7 +31,13 @@ class Simon:
 
         fond = pygame.Color(220,150,15)
 
-        pygame.draw.rect(self.screen, fond, pygame.Rect(0,0,self.size_carre*4, self.size_carre*4))
+        #===SONS===#
+        pygame.mixer.init()
+
+        self.bleuSound = pygame.mixer.Sound("sound/bleu.wav")
+        self.jauneSound = pygame.mixer.Sound("sound/jaune.wav")
+        self.rougeSound = pygame.mixer.Sound("sound/rouge.wav")
+        self.vertSound = pygame.mixer.Sound("sound/vert.wav")
 
         #Coordonées des couleurs
 
@@ -39,6 +47,8 @@ class Simon:
         self.x_vert, self.y_vert = (self.size_carre * 2, self.size_carre)
 
         #On les dessine
+        pygame.draw.rect(self.screen, fond, pygame.Rect(0,0,self.size_carre*4, self.size_carre*4))
+
         self.carre_bleu = pygame.draw.rect(self.screen, self.bleu, pygame.Rect(self.x_bleu, self.y_bleu,size_carre, self.size_carre))
         self.carre_jaune = pygame.draw.rect(self.screen, self.jaune, pygame.Rect(self.x_jaune, self.y_jaune, self.size_carre, self.size_carre))
         self.carre_rouge = pygame.draw.rect(self.screen, self.rouge, pygame.Rect(self.x_rouge, self.y_rouge, self.size_carre, self.size_carre))
@@ -83,14 +93,56 @@ class Simon:
         #Permet de dessiner un petit flash (blanc) sur les couleurs générés
         for couleur in self.c_choix:
             x, y = eclaircie[couleur][0]
+            self.playStopSoundColor(couleur)
             pygame.draw.rect(self.screen, self.eclair, pygame.Rect(x, y, self.size_carre, self.size_carre))
             pygame.display.update()
             pygame.time.wait(450)
+            self.playStopSoundColor(couleur, "stop")
             pygame.draw.rect(self.screen, eclaircie[couleur][1], pygame.Rect(x, y, self.size_carre, self.size_carre))
             pygame.display.update()
 
+    def playStopSoundColor(self, couleur, mode="play"):
+        soundColor = {
+                "BLEU": self.bleuSound,
+                "JAUNE": self.jauneSound,
+                "ROUGE": self.rougeSound,
+                "VERT": self.vertSound
+        }
+
+        if mode == "play":
+            soundColor[couleur].play()
+        else:
+            soundColor[couleur].stop()
+
+
     def checkListes(self):
         return self.c_choix == self.c_choix_util
+
+    def getScore(self):
+        return len(self.c_choix_util)
+    
+    def getScoreFile(self):
+        with open("scores.txt", "r") as f:
+            depickler = pickle.Unpickler(f)
+            score = depickler.load()
+        return score
+
+    def saveScoreFile(self):
+        score = self.getScore()
+        if os.path.isfile("scores.txt"):
+            scoreRecupe = self.getScoreFile()
+            if score > scoreRecupe: 
+                with open("scores.txt", "w") as f:
+                    pickler = pickle.Pickler(f)
+                    pickler.dump(score)
+                print "Score enregistré car votre ancien score était plus petit !"
+            else:
+                print "Score non enregistré car votre ancien score était plus grand !"
+        else:
+            with open("scores.txt", "w") as f:
+                pickler = pickle.Pickler(f)
+                pickler.dump(score)
+                print "Fichier scores.txt créer ! Score enegistré !"
         
     def mainLoop(self):
         ok = True
@@ -113,11 +165,14 @@ class Simon:
                             (self.x_vert, self.y_vert) : "VERT"
                     }
                     if (mx, my) in pos_carre:
-                        self.c_choix_util.append(pos_carre[mx,my])
+                        couleur = pos_carre[mx,my]
+                        self.c_choix_util.append(couleur)
+                        self.playStopSoundColor(couleur)
 
                     #Si la taille des 2 listes est la même, on les compares.
                     if len(self.c_choix_util) == len(self.c_choix):
-                        pygame.time.wait(250)
+                        pygame.time.wait(500)
+                        self.playStopSoundColor(couleur, "stop")
                         #Pas pareil on sort 
                         if not self.checkListes():
                             termcolor_carre = {
@@ -129,6 +184,8 @@ class Simon:
                             print "Perdu !"
                             print "Le bon ordre était : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix)
                             print "Le votre : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix_util)
+                            print "SCORE : %d" % self.getScore()
+                            self.saveScoreFile()
                             ok = False
                         else :
                             choix = self.genChoix()
