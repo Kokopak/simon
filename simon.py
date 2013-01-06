@@ -59,7 +59,7 @@ class Simon:
         self.c_choix_util = [] #==> Choix de l'utilisateur
 
         self.font = pygame.font.Font(None, 17)
-        spaceText = self.font.render("Appuyez sur la barre d'espace pour commencer!", True, (0,0,0), (159,182,205))
+        spaceText = self.font.render("Appuyez sur la barre d'espace pour commencer !", True, (0,0,0), (159,182,205))
         spaceTextRec = spaceText.get_rect()
         spaceTextRec.centerx = self.screen.get_rect().centerx
         spaceTextRec.centery = self.screen.get_rect().centery + 50
@@ -111,8 +111,10 @@ class Simon:
 
         if mode == "play":
             soundColor[couleur].play()
-        else:
+        elif mode == "stop":
             soundColor[couleur].stop()
+        else:
+            print "Mode inconnue !"
 
 
     def checkListes(self):
@@ -142,7 +144,7 @@ class Simon:
             with open("scores.txt", "w") as f:
                 pickler = pickle.Pickler(f)
                 pickler.dump(score)
-                print "Fichier scores.txt créer ! Score enegistré !"
+                print "Fichier scores.txt créer ! Score enregistré !"
         
     def mainLoop(self):
         ok = True
