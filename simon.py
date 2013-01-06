@@ -153,8 +153,9 @@ class Simon:
             if event.type == QUIT:
                 ok = False
             elif event.type == KEYDOWN and event.key == K_SPACE:
-                choix = self.genChoix()
-                self.eclaircieCouleurs()
+                if self.c_choix == []:
+                    choix = self.genChoix()
+                    self.eclaircieCouleurs()
             elif event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if self.c_choix != []:
                     mx, my = pygame.mouse.get_pos()
