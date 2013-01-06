@@ -183,7 +183,7 @@ class Simon:
                             }
                             print "Perdu !"
                             print "Le bon ordre était : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix)
-                            print "Le votre : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix_util)
+                            print "Le votre           : %s" % "-->".join(colored("%s" % el, termcolor_carre[el]) for el in self.c_choix_util)
                             print "SCORE : %d" % self.getScore()
                             self.saveScoreFile()
                             ok = False
